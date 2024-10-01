@@ -159,14 +159,14 @@ export default function Home() {
             </p>
           )}
           <p className="mt-1 text-xs text-gray-500">
-            Supports PNG, JPG, GIF, MP3
+          Supports: <strong>PNG, JPG, GIF, MP3, PDF, TXT, DOCX</strong>
           </p>
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
-            accept=".png,.jpg,.gif,.mp3"
+            accept=".png,.jpg,.gif,.pdf,.docx,.xlsx" // Updated accepted formats
           />
         </div>
 
