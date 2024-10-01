@@ -1,4 +1,5 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent } from 'react';
+import { ImageIcon, FileIcon } from 'lucide-react'; // Import FileIcon for indicating selected files
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -6,6 +7,8 @@ export default function Home() {
   const [encryptedFile, setEncryptedFile] = useState<Blob | null>(null);
   const [encryptedFileUrl, setEncryptedFileUrl] = useState<string | null>(null);
   const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt'); // Mode state
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   console.log(encryptedFile);
 
   // Convert ArrayBuffer to Hexadecimal string
@@ -27,6 +30,28 @@ export default function Home() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
     setFile(selectedFile);
+  };
+
+  // Handle file drop
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    setFile(droppedFile);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleBrowse = () => {
+    fileInputRef.current?.click();
   };
 
   // Encrypt the selected file
@@ -107,17 +132,49 @@ export default function Home() {
 
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">{mode === 'encrypt' ? 'Encryption' : 'Decryption'}</h2>
 
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4"
-        />
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center ${
+            isDragging ? 'border-blue-500 bg-blue-100' : 'border-gray-300'
+          }`}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+          {file ? (
+            <div className="flex items-center justify-center mt-2">
+              <FileIcon className="h-8 w-8 text-gray-600" />
+              <span className="ml-2 text-gray-700">{file.name}</span> {/* Display file name */}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-gray-600">
+              Drop your file here, or{' '}
+              <button
+                onClick={handleBrowse}
+                className="text-blue-500 hover:text-blue-600 focus:outline-none focus:underline"
+              >
+                browse
+              </button>
+            </p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            Supports PNG, JPG, GIF, MP3
+          </p>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".png,.jpg,.gif,.mp3"
+          />
+        </div>
 
         {mode === 'encrypt' && (
           <>
             <button
               onClick={handleEncrypt}
-              className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+              className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition mt-4"
             >
               Encrypt File
             </button>
